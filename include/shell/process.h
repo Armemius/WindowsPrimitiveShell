@@ -11,4 +11,6 @@ BOOL Execute(TCHAR *commandLine);
 
 DWORDLONG MeasureProcessTime(TCHAR *commandLine);
 
+VOID RunShell(void);
+
 #endif

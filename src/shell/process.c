@@ -1,7 +1,7 @@
 #include <shell/process.h>
 
+#include <process.h>
 #include <stdio.h>
-
 #include <time.h>
 #include <userenv.h>
 #pragma comment(lib, "userenv.lib")
@@ -19,7 +19,6 @@ BOOL Execute(TCHAR *commandLine) {
 
   // Get the token of the current process
   if (!OpenProcessToken(GetCurrentProcess(), desiredAccess, &hToken)) {
-    _tprintf(_T("OpenProcessToken failed: %ld\n"), GetLastError());
     return FALSE;
   }
 
@@ -42,7 +41,6 @@ BOOL Execute(TCHAR *commandLine) {
                            &si,         // Startup info
                            &pi          // Process information
                            )) {
-    _tprintf(_T("CreateProcessAsUser failed: %ld\n"), GetLastError());
     CloseHandle(hToken);
     return FALSE;
   }
@@ -76,4 +74,41 @@ DWORDLONG MeasureProcessTime(TCHAR *commandLine) {
       ((double)(end.QuadPart - start.QuadPart) / frequency.QuadPart) * 1e+9;
 
   return (DWORDLONG)elapsedTime;
+}
+
+VOID RunShell(void) {
+  TCHAR commandLine[MAX_PATH];
+  DWORDLONG executionTime;
+
+  while (TRUE) {
+    _tprintf(_T("shell> "));
+    if (_fgetts(commandLine, MAX_PATH, stdin) == NULL) {
+      _tprintf(_T("\033[31mError reading command\033[0m\n"));
+      continue;
+    }
+
+    size_t len = _tcslen(commandLine);
+    if (len > 0 && commandLine[len - 1] == _T('\n')) {
+      commandLine[len - 1] = _T('\0');
+    }
+
+    if (_tcscmp(commandLine, _T("exit")) == 0) {
+      break;
+    }
+
+    if (_tcscmp(commandLine, _T("\0")) == 0) {
+      _tprintf(_T("\033[31mNo command entered\033[0m\n"));
+      continue;
+    }
+
+    executionTime = MeasureProcessTime(commandLine);
+    if (executionTime == EXECUTION_ERROR) {
+      _tprintf(_T("\033[31mFailed to execute command\033[0m\n"));
+    } else {
+      _tprintf(_T("\033[32mExecution time: %fs\033[0m\n"),
+               executionTime / 1e+9);
+    }
+  }
+
+  return;
 }
