@@ -1,6 +1,10 @@
 #ifndef PROCESS_H
 #define PROCESS_H
 
-void say_hello(void);
+#include <stdbool.h>
+#include <tchar.h>
+#include <windows.h>
+
+BOOL Execute(TCHAR *commandLine);
 
 #endif
