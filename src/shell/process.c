@@ -1,6 +1,8 @@
 #include <shell/process.h>
 
 #include <stdio.h>
+
+#include <time.h>
 #include <userenv.h>
 #pragma comment(lib, "userenv.lib")
 
@@ -54,4 +56,24 @@ BOOL Execute(TCHAR *commandLine) {
   CloseHandle(hToken);
 
   return TRUE;
+}
+
+DWORDLONG MeasureProcessTime(TCHAR *commandLine) {
+  LARGE_INTEGER start, end;
+  LARGE_INTEGER frequency;
+  double elapsedTime;
+
+  QueryPerformanceFrequency(&frequency);
+  QueryPerformanceCounter(&start);
+
+  if (!Execute(commandLine)) {
+    return EXECUTION_ERROR;
+  }
+
+  QueryPerformanceCounter(&end);
+
+  elapsedTime =
+      ((double)(end.QuadPart - start.QuadPart) / frequency.QuadPart) * 1e+9;
+
+  return (DWORDLONG)elapsedTime;
 }
