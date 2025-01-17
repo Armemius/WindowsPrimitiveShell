@@ -1,1 +1,1 @@
-add_compile_options(/Wall /WX)
+add_compile_options(/Wall)
